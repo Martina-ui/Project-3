@@ -1,0 +1,7 @@
+{
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "catch2TestExplorer.testBinaries": [
+    "${workspaceFolder}/build/Tests"
+  ],
+  "testExplorer.gutterEnabled": true
+}
