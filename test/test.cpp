@@ -17,7 +17,7 @@ static void capture_output(function<void()> fn, string &out) {
   out = oss.str();
 }
 
-TEST_CASE("Invalid commands produce unsuccessful and return false", "[invalid]") {
+TEST_CASE("Invalid commands", "[invalid]") {
   CampusCompass c;
   ofstream("edges_tmp.csv") << "LocationID_1,LocationID_2,Name_1,Name_2,Time\n";
   ofstream("classes_tmp.csv") << "ClassCode,LocationID,Start Time (HH:MM),End Time (HH:MM)\n";
@@ -71,7 +71,7 @@ TEST_CASE("Test dropClass, removeClass, remove, replaceClass behaviors", "[comma
   REQUIRE(removed == 2);
 }
 
-TEST_CASE("printShortestEdges reflects reachability before and after toggling edges", "[path][toggle]") {
+TEST_CASE("printShortestEdges reflects right edges", "[path][toggle]") {
   CampusCompass c;
   ofstream es("edges_path.csv");
   es << "LocationID_1,LocationID_2,Name_1,Name_2,Time\n";
