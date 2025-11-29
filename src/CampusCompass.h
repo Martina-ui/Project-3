@@ -1,4 +1,3 @@
-#pragma once
 
 #include <string>
 #include <vector>
@@ -8,7 +7,7 @@
 #include <set>
 #include <utility>
 #include <limits>
-
+#pragma once
 using namespace std;
 
 class CampusCompass {
@@ -36,7 +35,6 @@ private:
     unordered_map<int, vector<Edge>> adj_list;
     unordered_map<int, Student> students_map;
     unordered_map<string, ClassInfo> classes_map;
-
     int find_edge_index(int from, int to) const;
     unordered_map<int, int> dijkstra_distances(int source) const;
     vector<int> dijkstra_path(int source, int target) const;
@@ -47,7 +45,6 @@ public:
     CampusCompass();
     bool parse_csv(const string &edges_filepath, const string &classes_filepath);
     bool parse_command(const string &command);
-
     bool insert_student(const string &name, int ufid, int residence, const vector<string> &class_codes);
     bool remove_student(int ufid);
     bool drop_class(int ufid, const string &class_code);

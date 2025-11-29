@@ -1,5 +1,4 @@
 #include "CampusCompass.h"
-
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -8,11 +7,9 @@
 #include <cctype>
 #include <iostream>
 #include <limits>
-
 using namespace std;
 
-CampusCompass::CampusCompass() {
-}
+CampusCompass::CampusCompass() {}
 
 bool CampusCompass::parse_csv(const string &edges_filepath, const string &classes_filepath) {
     ifstream edges_file(edges_filepath);
@@ -86,8 +83,18 @@ bool CampusCompass::parse_csv(const string &edges_filepath, const string &classe
         }
         string code = toks[0];
         int loc = stoi(toks[1]);
-        string start = (toks.size() > 2) ? toks[2] : string();
-        string end = (toks.size() > 3) ? toks[3] : string();
+        string start;
+        if (toks.size() > 2) {
+            start = toks[2];
+        } else {
+            start = string();
+        }
+        string end;
+        if (toks.size() > 3) {
+            end = toks[3];
+        } else {
+            end = string();
+        }
         ClassInfo ci{code, loc, start, end};
         classes_map[code] = ci;
     }
@@ -131,7 +138,11 @@ bool CampusCompass::parse_command(const string &command) {
             class_codes.push_back(code);
         }
         bool ok = insert_student(name, ufid, residence, class_codes);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "remove") {
         int ufid;
@@ -140,7 +151,11 @@ bool CampusCompass::parse_command(const string &command) {
             return false;
         }
         bool ok = remove_student(ufid);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "dropClass") {
         int ufid;
@@ -150,7 +165,11 @@ bool CampusCompass::parse_command(const string &command) {
             return false;
         }
         bool ok = drop_class(ufid, class_code);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "replaceClass") {
         int ufid;
@@ -160,7 +179,11 @@ bool CampusCompass::parse_command(const string &command) {
             return false;
         }
         bool ok = replace_class(ufid, c1, c2);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "removeClass") {
         string class_code;
@@ -187,7 +210,11 @@ bool CampusCompass::parse_command(const string &command) {
             edges.emplace_back(a,b);
         }
         bool ok = toggle_edges_closure(edges);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "checkEdgeStatus") {
         int a, b;
@@ -204,7 +231,11 @@ bool CampusCompass::parse_command(const string &command) {
             return false;
         }
         bool ok = is_connected(a,b);
-        cout << (ok ? "successful" : "unsuccessful") << '\n';
+        if (ok) {
+            cout << "successful" << '\n';
+        } else {
+            cout << "unsuccessful" << '\n';
+        }
         return ok;
     } else if (cmd == "printShortestEdges") {
         int ufid;
@@ -618,10 +649,19 @@ bool CampusCompass::verify_schedule(int ufid) const {
         int from_loc = items[i].loc;
         int to_loc = items[i+1].loc;
         auto distmap = dijkstra_distances(from_loc);
-        int shortest = distmap.count(to_loc) ? distmap.at(to_loc) : numeric_limits<int>::max();
+        int shortest;
+        if (distmap.count(to_loc)) {
+            shortest = distmap.at(to_loc);
+        } else {
+            shortest = numeric_limits<int>::max();
+        }
         int gap = items[i+1].start - items[i].end;
         bool can = (shortest <= gap);
-        cout << items[i].code << " - " << items[i+1].code << " \"" << (can ? "Can make it!" : "Cannot make it!") << "\"" << '\n';
+        if (can) {
+            cout << items[i].code << " - " << items[i+1].code << " \"" << "Can make it!" << "\"" << '\n';
+        } else {
+            cout << items[i].code << " - " << items[i+1].code << " \"" << "Cannot make it!" << "\"" << '\n';
+        }
     }
     return true;
 }
