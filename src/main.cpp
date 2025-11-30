@@ -8,7 +8,7 @@ int main() {
     int n;
     if (!(std::cin >> n)) return 0;
     std::string line;
-    std::getline(std::cin, line); // consume end of first line
+    std::getline(std::cin, line); 
     for (int i = 0; i < n; ++i) {
         if (!std::getline(std::cin, line)) break;
         compass.parse_command(line);
