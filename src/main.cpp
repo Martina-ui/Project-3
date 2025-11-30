@@ -9,14 +9,12 @@ int main() {
     // Helper: try various locations to locate the data directory reliably
     auto locate_data_dir = [&]() -> std::string {
         namespace fs = std::filesystem;
-        // Candidate relative paths from cwd
         std::vector<fs::path> candidates = {"data", "../data", "build/data"};
         for (auto &p : candidates) {
             if (fs::exists(p / "edges.csv") && fs::exists(p / "classes.csv")) {
                 return fs::canonical(p).string();
             }
         }
-        // Walk up parent directories from cwd (max 6 levels)
         fs::path cur = fs::current_path();
         for (int i = 0; i < 6; ++i) {
             fs::path cand = cur / "data";
@@ -25,7 +23,6 @@ int main() {
             }
             if (cur.has_parent_path()) cur = cur.parent_path(); else break;
         }
-        // Try relative to executable path
         char exe_path[4096] = {0};
         ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path)-1);
         if (len > 0) {
@@ -44,7 +41,6 @@ int main() {
     if (!data_dir.empty()) {
         compass.parse_csv(data_dir + "/edges.csv", data_dir + "/classes.csv");
     } else {
-        // fallback to previous candidates
         if (!compass.parse_csv("data/edges.csv", "data/classes.csv")) {
             if (!compass.parse_csv("../data/edges.csv", "../data/classes.csv")) {
                 compass.parse_csv("build/data/edges.csv", "build/data/classes.csv");
