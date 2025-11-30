@@ -1,36 +1,55 @@
 #include <iostream>
-#include <filesystem>
+#include <string>
+#include <vector>
 #include <unistd.h>
+#include <limits.h>
+#include <cstring>
+#include <sys/stat.h>
 #include "CampusCompass.h"
-using namespace std;
 
 int main() {
     CampusCompass compass;
-    // Helper: try various locations to locate the data directory reliably
+    auto file_exists = [&](const std::string &path)->bool{
+        struct stat st;
+        return stat(path.c_str(), &st) == 0;
+    };
+    auto canonical = [&](const std::string &p)->std::string{
+        char buf[PATH_MAX];
+        if (realpath(p.c_str(), buf)) return std::string(buf);
+        return p;
+    };
     auto locate_data_dir = [&]() -> std::string {
-        namespace fs = std::filesystem;
-        std::vector<fs::path> candidates = {"data", "../data", "build/data"};
+        std::vector<std::string> candidates = {"data", "../data", "build/data"};
         for (auto &p : candidates) {
-            if (fs::exists(p / "edges.csv") && fs::exists(p / "classes.csv")) {
-                return fs::canonical(p).string();
+            if (file_exists(p + "/edges.csv") && file_exists(p + "/classes.csv")) {
+                return canonical(p);
             }
         }
-        fs::path cur = fs::current_path();
-        for (int i = 0; i < 6; ++i) {
-            fs::path cand = cur / "data";
-            if (fs::exists(cand / "edges.csv") && fs::exists(cand / "classes.csv")) {
-                return fs::canonical(cand).string();
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd)) != nullptr) {
+            std::string cur(cwd);
+            for (int i = 0; i < 6; ++i) {
+                std::string cand = cur + "/data";
+                if (file_exists(cand + "/edges.csv") && file_exists(cand + "/classes.csv")) {
+                    return canonical(cand);
+                }
+                size_t pos = cur.find_last_of('/');
+                if (pos == std::string::npos) break;
+                cur = cur.substr(0, pos);
             }
-            if (cur.has_parent_path()) cur = cur.parent_path(); else break;
         }
         char exe_path[4096] = {0};
         ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path)-1);
         if (len > 0) {
-            fs::path execdir = fs::path(std::string(exe_path, (size_t)len)).parent_path();
-            std::vector<fs::path> exec_candidates = {execdir / "data", execdir.parent_path() / "data"};
-            for (auto &p : exec_candidates) {
-                if (fs::exists(p / "edges.csv") && fs::exists(p / "classes.csv")) {
-                    return fs::canonical(p).string();
+            std::string exec(std::string(exe_path, (size_t)len));
+            size_t pos = exec.find_last_of('/');
+            if (pos != std::string::npos) {
+                std::string execdir = exec.substr(0, pos);
+                std::vector<std::string> exec_candidates = {execdir + "/data", execdir + "/../data"};
+                for (auto &p : exec_candidates) {
+                    if (file_exists(p + "/edges.csv") && file_exists(p + "/classes.csv")) {
+                        return canonical(p);
+                    }
                 }
             }
         }
@@ -48,11 +67,11 @@ int main() {
         }
     }
     int no_of_lines;
-    string command;
-    cin >> no_of_lines;
-    cin.ignore();
+    std::string command;
+    std::cin >> no_of_lines;
+    std::cin.ignore();
     for (int i = 0; i < no_of_lines; i++) {
-        getline(cin, command);
+        std::getline(std::cin, command);
         compass.parse_command(command);
     }
 }
