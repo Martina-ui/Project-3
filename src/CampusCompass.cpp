@@ -123,8 +123,47 @@ bool CampusCompass::parse_command(const string &command) {
         string name = command.substr(p+1, q-p-1);
         string rest = command.substr(q+1);
         stringstream rs(rest);
-        int ufid, residence, n;
-        if (!(rs >> ufid >> residence >> n)) {
+        string ufid_str, residence_str;
+        int n;
+        if (!(rs >> ufid_str >> residence_str >> n)) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        // validate UFID: must be exactly 8 digits
+        if (ufid_str.size() != 8) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        for (char ch : ufid_str) {
+            if (!isdigit((unsigned char)ch)) {
+                cout << "unsuccessful\n";
+                return false;
+            }
+        }
+        int ufid = stoi(ufid_str);
+        // validate name: letters and spaces only
+        bool name_ok = false;
+        for (char ch : name) {
+            if (isalpha((unsigned char)ch)) name_ok = true;
+            if (!(isalpha((unsigned char)ch) || ch == ' ')) {
+                cout << "unsuccessful\n";
+                return false;
+            }
+        }
+        if (!name_ok) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        // validate residence is an integer
+        int residence;
+        try {
+            residence = stoi(residence_str);
+        } catch (...) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        // validate N range (1..6)
+        if (n < 1 || n > 6) {
             cout << "unsuccessful\n";
             return false;
         }
@@ -269,14 +308,33 @@ bool CampusCompass::parse_command(const string &command) {
         cout << "Student Zone Cost For " << it->second.name << ": " << cost << '\n';
         return true;
     } else if (cmd == "verifySchedule") {
-        int ufid;
-        if (!(ss >> ufid)) {
+        string ufid_str;
+        if (!(ss >> ufid_str)) {
             cout << "unsuccessful\n";
             return false;
         }
-        bool ok = verify_schedule(ufid);
-        return ok;
+        if (ufid_str.size() != 8) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        for (char ch : ufid_str) if (!isdigit((unsigned char)ch)) { cout << "unsuccessful\n"; return false; }
+        int ufid = stoi(ufid_str);
+        auto it = students_map.find(ufid);
+        if (it == students_map.end()) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        if (it->second.class_codes.size() <= 1) {
+            cout << "unsuccessful\n";
+            return false;
+        }
+        cout << "successful" << '\n';
+        // print the schedule details
+        verify_schedule(ufid);
+        return true;
     }
+    // unknown command -> unsuccessful
+    cout << "unsuccessful\n";
     return false;
 }
 
@@ -631,7 +689,6 @@ bool CampusCompass::verify_schedule(int ufid) const {
         return false;
     }
     if (it->second.class_codes.size() <= 1) {
-        cout << "unsuccessful" << '\n';
         return false;
     }
     struct Item { int start; int end; string code; int loc; };
